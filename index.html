@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试剂耗材凑数工具</title>
+    <style>
+        :root {
+            --primary: #4f6ef7;
+            --primary-light: #6b83f9;
+            --primary-dark: #3a54d4;
+            --success: #22c55e;
+            --success-light: #dcfce7;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 24px 0;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .header h1 span {
+            opacity: 0.85;
+            font-weight: 400;
+            font-size: 14px;
+            margin-left: 12px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-white {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-white:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafbfc;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header h2 .icon {
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Product Input */
+        .input-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 16px;
+            align-items: end;
+        }
+
+        .input-row input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .input-row input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,110,247,0.1);
+        }
+
+        .input-row label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .import-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .import-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .import-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .import-hint code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        /* Product Table */
+        .product-table-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .product-table th {
+            background: #f8fafc;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .product-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .product-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .product-table .col-actions {
+            width: 60px;
+            text-align: center;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+            background: #fef2f2;
+        }
+
+        .product-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            padding: 0 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Target Amount */
+        .target-section {
+            padding: 20px;
+        }
+
+        .target-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .target-input-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .target-input {
+            flex: 1;
+        }
+
+        .target-input input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+            color: var(--primary-dark);
+        }
+
+        .target-input input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79,110,247,0.1);
+        }
+
+        .target-input input::placeholder {
+            font-size: 14px;
+            font-weight: 400;
+            color: #cbd5e1;
+        }
+
+        .tolerance-group {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tolerance-group label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .tolerance-group input {
+            width: 100px;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .tolerance-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .tolerance-group span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .solve-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+        }
+
+        .solve-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Result */
+        .result-section {
+            grid-column: 1 / -1;
+        }
+
+        .result-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: #f8fafc;
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .summary-item .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .summary-item .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .summary-item .value.success {
+            color: var(--success);
+        }
+
+        .summary-item .value.warning {
+            color: var(--warning);
+        }
+
+        .result-table-wrapper {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .result-table th {
+            background: #f8fafc;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .result-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .result-table tr:last-child td {
+            background: #f8fafc;
+            font-weight: 700;
+            border-bottom: none;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 14px;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            max-width: 360px;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--primary); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+            resize: vertical;
+            outline: none;
+        }
+
+        .modal-body textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Hidden file input */
+        .file-input-hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .result-summary {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Progress bar for solving */
+        .solve-progress {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .solve-progress.active {
+            display: block;
+        }
+
+        .solve-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s;
+            animation: progressPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Solution count badge */
+        .solution-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-content">
+        <h1>🧪 试剂耗材凑数工具 <span>输入总金额，智能匹配产品组合</span></h1>
+        <div class="header-actions">
+            <button class="btn btn-white btn-sm" onclick="shareProducts()">🔗 分享清单</button>
+            <button class="btn btn-white btn-sm" onclick="loadDemo()">📦 加载示例</button>
+            <button class="btn btn-white btn-sm" onclick="clearAll()">🗑️ 清空全部</button>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="main-grid">
+        <!-- Left: Product List -->
+        <div class="card">
+            <div class="card-header">
+                <h2><span class="icon">📋</span> 产品清单 <span class="product-count" id="productCount">0</span></h2>
+                <button class="btn btn-outline btn-sm" onclick="openImportModal()">📥 批量导入</button>
+            </div>
+            <div class="card-body">
+                <div class="input-row">
+                    <div>
+                        <label>产品名称</label>
+                        <input type="text" id="prodName" placeholder="如：无水乙醇">
+                    </div>
+                    <div>
+                        <label>单价（元）</label>
+                        <input type="number" id="prodPrice" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div>
+                        <label>库存上限</label>
+                        <input type="number" id="prodStock" placeholder="999" min="1" value="999">
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="addProduct()" style="height:38px;margin-top:18px">＋添加</button>
+                    </div>
+                </div>
+
+                <div class="product-table-wrapper" id="productTableWrapper">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">📋</div>
+                        <p>暂无产品，请手动添加或批量导入</p>
+                    </div>
+                    <table class="product-table" id="productTable" style="display:none">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>产品名称</th>
+                                <th>单价</th>
+                                <th>库存上限</th>
+                                <th class="col-actions">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="import-section">
+                    <div class="import-actions">
+                        <button class="btn btn-outline btn-sm" onclick="document.getElementById('csvFile').click()">📄 从CSV导入</button>
+                        <button class="btn btn-outline btn-sm" onclick="exportProducts()">📤 导出清单</button>
+                    </div>
+                    <div class="import-hint">
+                        CSV格式要求：每行 <code>产品名称,单价,库存上限</code>，首行为表头可省略。<br>
+                        示例：<code>无水乙醇,28.5,50</code>（库存上限可省略，默认999）
+                    </div>
+                    <input type="file" id="csvFile" class="file-input-hidden" accept=".csv,.txt" onchange="importCSV(event)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Target & Solve -->
+        <div class="card">
+            <div class="card-header">
+                <h2><span class="icon">🎯</span> 凑数设置</h2>
+            </div>
+            <div class="target-section">
+                <div class="target-input-group">
+                    <div class="target-input">
+                        <label>目标总金额（元）</label>
+                        <input type="number" id="targetAmount" placeholder="请输入目标金额" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="tolerance-group">
+                    <label>允许误差：</label>
+                    <input type="number" id="tolerance" value="0" step="0.01" min="0">
+                    <span>元（0 = 尽量精确）</span>
+                </div>
+                <div class="tolerance-group" style="margin-top:10px">
+                    <label>最多返回：</label>
+                    <input type="number" id="maxSolutions" value="5" step="1" min="1" max="50" style="width:70px">
+                    <span>个方案</span>
+                </div>
+                <button class="btn btn-success solve-btn" id="solveBtn" onclick="solve()">
+                    🔍 开始凑数
+                </button>
+                <div class="solve-progress" id="solveProgress">
+                    <div class="solve-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result -->
+    <div class="card result-section" id="resultSection" style="display:none">
+        <div class="card-header">
+            <h2><span class="icon">✅</span> 凑数结果 <span class="solution-count" id="solutionCount"></span></h2>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-outline btn-sm" onclick="prevSolution()" id="prevBtn" style="display:none">◀ 上一方案</button>
+                <button class="btn btn-outline btn-sm" onclick="nextSolution()" id="nextBtn" style="display:none">下一方案 ▶</button>
+                <button class="btn btn-primary btn-sm" onclick="exportResult()">📥 导出结果</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="result-summary" id="resultSummary"></div>
+            <div class="result-table-wrapper" id="resultTableWrapper"></div>
+            <div class="result-actions">
+                <button class="btn btn-outline btn-sm" onclick="copyResult()">📋 复制结果</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>📥 批量导入产品</h3>
+            <button class="btn btn-sm btn-outline" onclick="closeImportModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;color:#64748b;margin-bottom:12px">
+                每行一个产品，格式：<code style="background:#f1f5f9;padding:2px 6px;border-radius:3px;font-size:12px">产品名称,单价,库存上限</code><br>
+                库存上限可省略（默认999）
+            </p>
+            <textarea id="importText" placeholder="无水乙醇,28.5,50
+盐酸,15.8,30
+氢氧化钠,22.0,20
+实验手套,45.0,100"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeImportModal()">取消</button>
+            <button class="btn btn-primary" onclick="importFromText()">确认导入</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="shareModal">
+    <div class="modal" style="max-width:650px">
+        <div class="modal-header">
+            <h3>🔗 分享产品清单</h3>
+            <button class="btn btn-sm btn-outline" onclick="closeShareModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;color:#64748b;margin-bottom:12px">
+                复制以下链接发送给他人，对方打开后即可直接加载你的产品清单：
+            </p>
+            <div style="display:flex;gap:8px">
+                <input type="text" id="shareUrlInput" readonly style="flex:1;padding:10px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;outline:none;background:#f8fafc;font-family:monospace">
+                <button class="btn btn-primary btn-sm" onclick="copyShareUrl()">📋 复制链接</button>
+            </div>
+            <div style="margin-top:12px;padding:10px;background:#fffbeb;border-radius:6px;font-size:12px;color:#92400e">
+                ⚠️ 链接中包含完整的产品清单数据。清单越多、产品名称越长，链接会相应变长。如超过50种产品建议改用 CSV 文件分享。
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeShareModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== State ==========
+let products = [];
+let solutions = [];
+let currentSolutionIndex = 0;
+
+// ========== Auto Save / Load (localStorage) ==========
+const STORAGE_KEY = 'reagent_tool_products';
+
+function saveProducts() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    } catch (e) {
+        console.warn('自动保存失败：', e);
+    }
+}
+
+function loadProducts() {
+    try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+            products = JSON.parse(data);
+            return true;
+        }
+    } catch (e) {
+        console.warn('自动恢复失败：', e);
+    }
+    return false;
+}
+
+// ========== Product Management ==========
+function addProduct() {
+    const nameEl = document.getElementById('prodName');
+    const priceEl = document.getElementById('prodPrice');
+    const stockEl = document.getElementById('prodStock');
+
+    const name = nameEl.value.trim();
+    const price = parseFloat(priceEl.value);
+    const stock = parseInt(stockEl.value) || 999;
+
+    if (!name) { showToast('请输入产品名称', 'error'); nameEl.focus(); return; }
+    if (isNaN(price) || price <= 0) { showToast('请输入有效的单价', 'error'); priceEl.focus(); return; }
+    if (stock <= 0) { showToast('库存上限必须大于0', 'error'); stockEl.focus(); return; }
+
+    products.push({ name, price, stock });
+    nameEl.value = '';
+    priceEl.value = '';
+    stockEl.value = '999';
+    nameEl.focus();
+
+    renderProducts();
+    saveProducts();
+    showToast(`已添加：${name}`, 'success');
+}
+
+function removeProduct(index) {
+    products.splice(index, 1);
+    renderProducts();
+    saveProducts();
+}
+
+function renderProducts() {
+    const tbody = document.getElementById('productBody');
+    const table = document.getElementById('productTable');
+    const empty = document.getElementById('emptyState');
+    const count = document.getElementById('productCount');
+
+    count.textContent = products.length;
+
+    if (products.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+    }
+
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    tbody.innerHTML = products.map((p, i) => `
+        <tr>
+            <td style="color:#94a3b8">${i + 1}</td>
+            <td style="font-weight:500">${escapeHtml(p.name)}</td>
+            <td style="color:var(--primary-dark);font-weight:600">¥${p.price.toFixed(2)}</td>
+            <td>${p.stock}</td>
+            <td class="col-actions"><button class="delete-btn" onclick="removeProduct(${i})" title="删除">✕</button></td>
+        </tr>
+    `).join('');
+}
+
+// ========== Import/Export ==========
+function openImportModal() {
+    document.getElementById('importModal').classList.add('active');
+    document.getElementById('importText').focus();
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').classList.remove('active');
+}
+
+function importFromText() {
+    const text = document.getElementById('importText').value.trim();
+    if (!text) { showToast('请输入产品数据', 'error'); return; }
+
+    const lines = text.split('\n').filter(l => l.trim());
+    let added = 0;
+
+    for (const line of lines) {
+        const parts = line.split(/[,，\t]/).map(s => s.trim());
+        if (parts.length < 2) continue;
+
+        // Skip header row
+        if (parts[0].includes('名称') || parts[0].includes('产品') || parts[0].toLowerCase() === 'name') continue;
+
+        const name = parts[0];
+        const price = parseFloat(parts[1]);
+        const stock = parts.length >= 3 ? parseInt(parts[2]) || 999 : 999;
+
+        if (name && !isNaN(price) && price > 0 && stock > 0) {
+            products.push({ name, price, stock });
+            added++;
+        }
+    }
+
+    renderProducts();
+    closeImportModal();
+    saveProducts();
+    document.getElementById('importText').value = '';
+    showToast(`成功导入 ${added} 个产品`, 'success');
+}
+
+function importCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        document.getElementById('importText').value = text;
+        openImportModal();
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+function exportProducts() {
+    if (products.length === 0) { showToast('暂无产品可导出', 'error'); return; }
+    let csv = '产品名称,单价,库存上限\n';
+    csv += products.map(p => `${p.name},${p.price},${p.stock}`).join('\n');
+    downloadFile(csv, '产品清单.csv', 'text/csv');
+    showToast('清单已导出', 'success');
+}
+
+function exportResult() {
+    if (solutions.length === 0) return;
+    const sol = solutions[currentSolutionIndex];
+    let csv = '产品名称,单价,数量,小计\n';
+    csv += sol.items.map(it => `${it.name},${it.price},${it.qty},${(it.price * it.qty).toFixed(2)}`).join('\n');
+    csv += `\n合计,,,,${sol.total.toFixed(2)}\n`;
+    csv += `目标金额,,,${sol.target.toFixed(2)}\n`;
+    csv += `差额,,,${(sol.total - sol.target).toFixed(2)}\n`;
+    downloadFile(csv, `凑数方案_${currentSolutionIndex + 1}.csv`, 'text/csv');
+}
+
+function copyResult() {
+    if (solutions.length === 0) return;
+    const sol = solutions[currentSolutionIndex];
+    let text = `=== 凑数方案 ${currentSolutionIndex + 1} ===\n`;
+    text += sol.items.map(it => `${it.name} × ${it.qty} = ¥${(it.price * it.qty).toFixed(2)}`).join('\n');
+    text += `\n合计：¥${sol.total.toFixed(2)}  目标：¥${sol.target.toFixed(2)}  差额：¥${(sol.total - sol.target).toFixed(2)}`;
+    navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板', 'success'));
+}
+
+function downloadFile(content, filename, type) {
+    const blob = new Blob(['\uFEFF' + content], { type: type + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ========== Solving Algorithm ==========
+function solve() {
+    const targetInput = document.getElementById('targetAmount');
+    const target = parseFloat(targetInput.value);
+    const tolerance = parseFloat(document.getElementById('tolerance').value) || 0;
+    const maxSolutions = parseInt(document.getElementById('maxSolutions').value) || 5;
+
+    if (isNaN(target) || target <= 0) { showToast('请输入有效的目标金额', 'error'); targetInput.focus(); return; }
+    if (products.length === 0) { showToast('请先添加产品', 'error'); return; }
+
+    const btn = document.getElementById('solveBtn');
+    const progress = document.getElementById('solveProgress');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> 计算中...';
+    progress.classList.add('active');
+
+    // Use setTimeout to allow UI update
+    setTimeout(() => {
+        try {
+            const result = solveSubsetSum(products, target, tolerance, maxSolutions);
+            solutions = result;
+            currentSolutionIndex = 0;
+            renderResult();
+            if (solutions.length > 0) {
+                showToast(`找到 ${solutions.length} 个方案！`, 'success');
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                showToast('未找到合适方案，请尝试调大误差范围或增加产品', 'error');
+            }
+        } catch (e) {
+            showToast('计算出错：' + e.message, 'error');
+            console.error(e);
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '🔍 开始凑数';
+        progress.classList.remove('active');
+    }, 50);
+}
+
+/**
+ * Solve bounded subset sum with multiple solutions.
+ * Uses a DP approach for finding optimal solutions, then 
+ * iterates to find alternative combinations.
+ */
+function solveSubsetSum(products, target, tolerance, maxSolutions) {
+    const n = products.length;
+
+    // Sort products by price ascending for better pruning
+    const sorted = products.map((p, i) => ({ ...p, origIndex: i }))
+        .sort((a, b) => a.price - b.price);
+
+    // Scale to integer cents to avoid floating point issues
+    const scale = 100;
+    const intTarget = Math.round(target * scale);
+    const intTolerance = Math.round(tolerance * scale);
+
+    const minAcceptable = intTolerance > 0 ? Math.max(0, intTarget - intTolerance) : 0;
+    const maxAcceptable = intTarget + intTolerance;
+
+    const dp = new Map();
+    dp.set(0, { count: 0, selections: [] });
+
+    let bestSolutions = [];
+
+    for (let i = 0; i < sorted.length; i++) {
+        const item = sorted[i];
+        const intPrice = Math.round(item.price * scale);
+        const maxQty = Math.min(item.stock, Math.floor(maxAcceptable / Math.max(1, intPrice)));
+
+        const newEntries = new Map();
+
+        // For each existing DP entry, try adding 1..maxQty of this item
+        for (const [sum, entry] of dp) {
+            for (let qty = 1; qty <= maxQty; qty++) {
+                const newSum = sum + intPrice * qty;
+                if (newSum > maxAcceptable) break;
+
+                if (!dp.has(newSum) && !newEntries.has(newSum)) {
+                    const newSelections = [...entry.selections, { idx: i, qty }];
+                    newEntries.set(newSum, {
+                        count: entry.count + qty,
+                        selections: newSelections
+                    });
+                }
+            }
+        }
+
+        // Merge new entries
+        for (const [sum, entry] of newEntries) {
+            if (!dp.has(sum)) {
+                dp.set(sum, entry);
+            }
+        }
+    }
+
+    // Find all valid sums
+    let validSums = [];
+    for (const sum of dp.keys()) {
+        if (sum >= minAcceptable && sum <= maxAcceptable) {
+            validSums.push(sum);
+        }
+    }
+
+    // Sort by closeness to target (prefer exact or slightly over)
+    validSums.sort((a, b) => {
+        const da = Math.abs(a - intTarget);
+        const db = Math.abs(b - intTarget);
+        // Prefer <= target when equally close
+        if (da !== db) return da - db;
+        return a - b;
+    });
+
+    // Collect solutions, trying to get diverse ones
+    let solutionSignatures = new Set();
+
+    for (const sum of validSums) {
+        if (bestSolutions.length >= maxSolutions) break;
+
+        const entry = dp.get(sum);
+        const items = entry.selections.map(sel => {
+            const p = sorted[sel.idx];
+            return { name: p.name, price: p.price, qty: sel.qty };
+        });
+
+        const total = sum / scale;
+
+        // Create a signature to detect near-duplicate solutions
+        const sig = items.map(it => `${it.name}x${it.qty}`).sort().join('|');
+        if (solutionSignatures.has(sig)) continue;
+        solutionSignatures.add(sig);
+
+        bestSolutions.push({
+            items,
+            total,
+            target,
+            diff: total - target,
+            diffPercent: ((total - target) / target * 100)
+        });
+    }
+
+    // If we only found one solution, try alternative combinations
+    if (bestSolutions.length === 1 && maxSolutions > 1) {
+        const alternatives = findAlternativeSolutions(sorted, intTarget, intTolerance, maxSolutions - 1, solutionSignatures, scale);
+        bestSolutions = bestSolutions.concat(alternatives);
+    }
+
+    return bestSolutions;
+}
+
+/**
+ * Find alternative solutions using different strategies.
+ */
+function findAlternativeSolutions(sorted, intTarget, intTolerance, needed, existingSigs, scale) {
+    const results = [];
+    const maxAcceptable = intTarget + intTolerance;
+    const minAcceptable = intTolerance > 0 ? Math.max(0, intTarget - intTolerance) : 0;
+
+    // Strategy: Greedy from high to low
+    const reversed = [...sorted].sort((a, b) => b.price - a.price);
+    const greedy = greedySolve(reversed, intTarget, maxAcceptable, minAcceptable, scale);
+    if (greedy) {
+        const sig = greedy.items.map(it => `${it.name}x${it.qty}`).sort().join('|');
+        if (!existingSigs.has(sig)) {
+            results.push(greedy);
+            existingSigs.add(sig);
+        }
+    }
+
+    // Strategy: Random shuffle attempts
+    for (let attempt = 0; attempt < 20 && results.length < needed; attempt++) {
+        const shuffled = [...sorted].sort(() => Math.random() - 0.5);
+        const greedy2 = greedySolve(shuffled, intTarget, maxAcceptable, minAcceptable, scale);
+        if (greedy2) {
+            const sig = greedy2.items.map(it => `${it.name}x${it.qty}`).sort().join('|');
+            if (!existingSigs.has(sig)) {
+                results.push(greedy2);
+                existingSigs.add(sig);
+            }
+        }
+    }
+
+    return results;
+}
+
+function greedySolve(sorted, intTarget, maxAcceptable, minAcceptable, scale) {
+    const intPrices = sorted.map(p => Math.round(p.price * scale));
+    let remaining = intTarget;
+    const selections = [];
+
+    for (let i = 0; i < sorted.length; i++) {
+        if (remaining <= minAcceptable) break;
+        const qty = Math.min(sorted[i].stock, Math.floor(remaining / Math.max(1, intPrices[i])));
+        if (qty > 0) {
+            selections.push({ idx: i, qty });
+            remaining -= qty * intPrices[i];
+        }
+    }
+
+    const total = intTarget - remaining;
+    if (total >= minAcceptable && total <= maxAcceptable && selections.length > 0) {
+        const items = selections.map(sel => {
+            const p = sorted[sel.idx];
+            return { name: p.name, price: p.price, qty: sel.qty };
+        });
+        return {
+            items,
+            total: total / scale,
+            target: intTarget / scale,
+            diff: (total - intTarget) / scale,
+            diffPercent: ((total - intTarget) / intTarget * 100)
+        };
+    }
+    return null;
+}
+
+// ========== Result Display ==========
+function renderResult() {
+    const section = document.getElementById('resultSection');
+
+    if (solutions.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+
+    const sol = solutions[currentSolutionIndex];
+    const isExact = Math.abs(sol.diff) < 0.01;
+    const isOver = sol.diff > 0;
+
+    // Summary
+    document.getElementById('resultSummary').innerHTML = `
+        <div class="summary-item">
+            <div class="label">目标金额</div>
+            <div class="value">¥${sol.target.toFixed(2)}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">方案金额</div>
+            <div class="value ${isExact ? 'success' : 'warning'}">¥${sol.total.toFixed(2)}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">差额</div>
+            <div class="value ${isExact ? 'success' : 'warning'}">${isExact ? '✓ 精确匹配' : (isOver ? '+' : '') + '¥' + sol.diff.toFixed(2)}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">产品种类</div>
+            <div class="value">${sol.items.length} 种</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">总数量</div>
+            <div class="value">${sol.items.reduce((s, i) => s + i.qty, 0)} 件</div>
+        </div>
+    `;
+
+    // Solution count
+    document.getElementById('solutionCount').textContent =
+        solutions.length > 1 ? `(方案 ${currentSolutionIndex + 1} / ${solutions.length})` : '';
+
+    // Nav buttons
+    document.getElementById('prevBtn').style.display = solutions.length > 1 ? '' : 'none';
+    document.getElementById('nextBtn').style.display = solutions.length > 1 ? '' : 'none';
+
+    // Table
+    let grandTotal = 0;
+    const rows = sol.items.map((item, i) => {
+        const subtotal = item.price * item.qty;
+        grandTotal += subtotal;
+        return `<tr>
+            <td style="color:#94a3b8">${i + 1}</td>
+            <td style="font-weight:500">${escapeHtml(item.name)}</td>
+            <td>¥${item.price.toFixed(2)}</td>
+            <td style="text-align:center;font-weight:600">${item.qty}</td>
+            <td style="text-align:right;font-weight:600;color:var(--primary-dark)">¥${subtotal.toFixed(2)}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('resultTableWrapper').innerHTML = `
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>产品名称</th>
+                    <th>单价</th>
+                    <th style="text-align:center">数量</th>
+                    <th style="text-align:right">小计</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+                <tr>
+                    <td colspan="4" style="text-align:right">合计</td>
+                    <td style="text-align:right;color:var(--primary-dark);font-size:16px">¥${grandTotal.toFixed(2)}</td>
+                </tr>
+            </tbody>
+        </table>
+    `;
+}
+
+function prevSolution() {
+    if (currentSolutionIndex > 0) {
+        currentSolutionIndex--;
+        renderResult();
+    }
+}
+
+function nextSolution() {
+    if (currentSolutionIndex < solutions.length - 1) {
+        currentSolutionIndex++;
+        renderResult();
+    }
+}
+
+// ========== Share Feature ==========
+function encodeProducts(data) {
+    // Compact format: "name1,price1,stock1|name2,price2,stock2|..."
+    const compact = data.map(p => `${p.name},${p.price},${p.stock}`).join('|');
+    return btoa(unescape(encodeURIComponent(compact)));
+}
+
+function decodeProducts(encoded) {
+    try {
+        const compact = decodeURIComponent(escape(atob(encoded)));
+        return compact.split('|').map(item => {
+            const parts = item.split(',');
+            return { name: parts[0], price: parseFloat(parts[1]), stock: parseInt(parts[2]) || 999 };
+        }).filter(p => p.name && !isNaN(p.price) && p.price > 0);
+    } catch (e) {
+        return null;
+    }
+}
+
+function shareProducts() {
+    if (products.length === 0) { showToast('暂无产品可分享', 'error'); return; }
+    const encoded = encodeProducts(products);
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = baseUrl + '?data=' + encoded;
+
+    document.getElementById('shareUrlInput').value = shareUrl;
+    document.getElementById('shareModal').classList.add('active');
+    document.getElementById('shareUrlInput').select();
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').classList.remove('active');
+}
+
+function copyShareUrl() {
+    const input = document.getElementById('shareUrlInput');
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        showToast('分享链接已复制到剪贴板', 'success');
+    }).catch(() => {
+        // Fallback
+        document.execCommand('copy');
+        showToast('分享链接已复制到剪贴板', 'success');
+    });
+}
+
+function loadFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const data = params.get('data');
+    if (!data) return false;
+
+    const parsed = decodeProducts(data);
+    if (!parsed || parsed.length === 0) return false;
+
+    products = parsed;
+    saveProducts();
+    renderProducts();
+    showToast(`已从分享链接加载 ${products.length} 个产品`, 'success');
+
+    // Clean URL without reload
+    window.history.replaceState({}, '', window.location.pathname);
+    return true;
+}
+
+// ========== Utilities ==========
+function showToast(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function clearAll() {
+    if (products.length > 0 && !confirm('确定清空所有产品和结果吗？')) return;
+    products = [];
+    solutions = [];
+    currentSolutionIndex = 0;
+    renderProducts();
+    saveProducts();
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('targetAmount').value = '';
+}
+
+function loadDemo() {
+    products = [
+        { name: '无水乙醇(AR 500mL)', price: 28.50, stock: 50 },
+        { name: '盐酸(AR 500mL)', price: 15.80, stock: 30 },
+        { name: '氢氧化钠(AR 500g)', price: 22.00, stock: 20 },
+        { name: '实验手套(丁腈/箱)', price: 45.00, stock: 100 },
+        { name: '移液器吸头(200μL/盒)', price: 38.50, stock: 80 },
+        { name: '离心管(15mL/包)', price: 12.60, stock: 200 },
+        { name: 'PBS缓冲液(1L)', price: 56.00, stock: 30 },
+        { name: '胰蛋白酶(100mL)', price: 128.00, stock: 10 },
+        { name: '细胞培养皿(60mm/包)', price: 35.00, stock: 50 },
+        { name: '比色皿(石英/个)', price: 18.00, stock: 40 },
+        { name: '滤膜(0.22μm/盒)', price: 65.00, stock: 25 },
+        { name: '封口膜(卷)', price: 8.50, stock: 100 },
+        { name: '称量纸(张)', price: 0.30, stock: 500 },
+        { name: 'pH标准缓冲液(套)', price: 42.00, stock: 20 },
+        { name: '载玻片(盒/50片)', price: 25.00, stock: 60 },
+        { name: '酒精棉球(罐)', price: 6.80, stock: 80 },
+        { name: '一次性注射器(5mL/支)', price: 0.85, stock: 500 },
+        { name: '琼脂粉(100g)', price: 48.00, stock: 15 },
+        { name: 'DTT(1g)', price: 195.00, stock: 8 },
+        { name: 'SDS-PAGE凝胶预制板(块)', price: 32.00, stock: 40 },
+    ];
+    renderProducts();
+    document.getElementById('targetAmount').value = '2000';
+    saveProducts();
+    showToast('已加载20种示例产品，目标金额设为¥2000', 'info');
+}
+
+// ========== Keyboard Shortcuts ==========
+document.addEventListener('keydown', function(e) {
+    // Enter to add product when in input fields
+    if (e.key === 'Enter' && ['prodName', 'prodPrice', 'prodStock'].includes(document.activeElement?.id)) {
+        addProduct();
+    }
+    // Enter to solve when in target amount
+    if (e.key === 'Enter' && document.activeElement?.id === 'targetAmount') {
+        solve();
+    }
+    // Escape to close modal
+    if (e.key === 'Escape') {
+        closeImportModal();
+    }
+});
+
+// Init: check URL first (shared link), then localStorage
+const loadedFromUrl = loadFromUrl();
+if (!loadedFromUrl) {
+    const restored = loadProducts();
+    renderProducts();
+    if (restored && products.length > 0) {
+        showToast(`已恢复上次保存的 ${products.length} 个产品`, 'info');
+    }
+} else {
+    renderProducts();
+}
+</script>
+
+</body>
+</html>
