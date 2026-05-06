@@ -802,6 +802,13 @@
                     <input type="number" id="maxSolutions" value="5" step="1" min="1" max="50" style="width:70px">
                     <span>个方案</span>
                 </div>
+                <div class="tolerance-group" style="margin-top:10px">
+                    <label>产品种类数：</label>
+                    <input type="number" id="minVariety" value="1" step="1" min="1" style="width:60px" title="结果中最少包含几种不同产品">
+                    <span>~</span>
+                    <input type="number" id="maxVariety" value="0" step="1" min="0" style="width:60px" title="结果中最多种类数，0=不限" placeholder="不限">
+                    <span>（0=不限）</span>
+                </div>
                 <button class="btn btn-success solve-btn" id="solveBtn" onclick="solve()">
                     🔍 开始凑数
                 </button>
@@ -1072,9 +1079,12 @@ function solve() {
     const target = parseFloat(targetInput.value);
     const tolerance = parseFloat(document.getElementById('tolerance').value) || 0;
     const maxSolutions = parseInt(document.getElementById('maxSolutions').value) || 5;
+    const minVariety = parseInt(document.getElementById('minVariety').value) || 1;
+    const maxVariety = parseInt(document.getElementById('maxVariety').value) || 0; // 0 = unlimited
 
     if (isNaN(target) || target <= 0) { showToast('请输入有效的目标金额', 'error'); targetInput.focus(); return; }
     if (products.length === 0) { showToast('请先添加产品', 'error'); return; }
+    if (minVariety > products.length) { showToast(`最少种类数不能超过产品总数(${products.length})`, 'error'); return; }
 
     const btn = document.getElementById('solveBtn');
     const progress = document.getElementById('solveProgress');
@@ -1082,10 +1092,12 @@ function solve() {
     btn.innerHTML = '<span class="spinner"></span> 计算中...';
     progress.classList.add('active');
 
+    const varietyConstraint = { min: minVariety, max: maxVariety || products.length };
+
     // Use setTimeout to allow UI update
     setTimeout(() => {
         try {
-            const result = solveSubsetSum(products, target, tolerance, maxSolutions);
+            const result = solveSubsetSum(products, target, tolerance, maxSolutions, varietyConstraint);
             solutions = result;
             currentSolutionIndex = 0;
             renderResult();
@@ -1093,7 +1105,7 @@ function solve() {
                 showToast(`找到 ${solutions.length} 个方案！`, 'success');
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
             } else {
-                showToast('未找到合适方案，请尝试调大误差范围或增加产品', 'error');
+                showToast('未找到合适方案，请尝试调大误差范围或调整种类数限制', 'error');
             }
         } catch (e) {
             showToast('计算出错：' + e.message, 'error');
@@ -1111,7 +1123,7 @@ function solve() {
  * Uses a DP approach for finding optimal solutions, then 
  * iterates to find alternative combinations.
  */
-function solveSubsetSum(products, target, tolerance, maxSolutions) {
+function solveSubsetSum(products, target, tolerance, maxSolutions, varietyConstraint) {
     const n = products.length;
 
     // Sort products by price ascending for better pruning
@@ -1179,13 +1191,18 @@ function solveSubsetSum(products, target, tolerance, maxSolutions) {
         return a - b;
     });
 
-    // Collect solutions, trying to get diverse ones
+    // Collect solutions, filtering by variety constraint
     let solutionSignatures = new Set();
 
     for (const sum of validSums) {
         if (bestSolutions.length >= maxSolutions) break;
 
         const entry = dp.get(sum);
+        const varietyCount = entry.selections.length;
+
+        // Apply variety constraint
+        if (varietyCount < varietyConstraint.min || varietyCount > varietyConstraint.max) continue;
+
         const items = entry.selections.map(sel => {
             const p = sorted[sel.idx];
             return { name: p.name, price: p.price, qty: sel.qty };
@@ -1203,13 +1220,14 @@ function solveSubsetSum(products, target, tolerance, maxSolutions) {
             total,
             target,
             diff: total - target,
-            diffPercent: ((total - target) / target * 100)
+            diffPercent: ((total - target) / target * 100),
+            variety: varietyCount
         });
     }
 
-    // If we only found one solution, try alternative combinations
-    if (bestSolutions.length === 1 && maxSolutions > 1) {
-        const alternatives = findAlternativeSolutions(sorted, intTarget, intTolerance, maxSolutions - 1, solutionSignatures, scale);
+    // If not enough solutions, try greedy-based alternatives
+    if (bestSolutions.length < maxSolutions) {
+        const alternatives = findAlternativeSolutions(sorted, intTarget, intTolerance, maxSolutions - bestSolutions.length, solutionSignatures, scale, varietyConstraint);
         bestSolutions = bestSolutions.concat(alternatives);
     }
 
@@ -1219,7 +1237,7 @@ function solveSubsetSum(products, target, tolerance, maxSolutions) {
 /**
  * Find alternative solutions using different strategies.
  */
-function findAlternativeSolutions(sorted, intTarget, intTolerance, needed, existingSigs, scale) {
+function findAlternativeSolutions(sorted, intTarget, intTolerance, needed, existingSigs, scale, varietyConstraint) {
     const results = [];
     const maxAcceptable = intTarget + intTolerance;
     const minAcceptable = intTolerance > 0 ? Math.max(0, intTarget - intTolerance) : 0;
@@ -1227,7 +1245,7 @@ function findAlternativeSolutions(sorted, intTarget, intTolerance, needed, exist
     // Strategy: Greedy from high to low
     const reversed = [...sorted].sort((a, b) => b.price - a.price);
     const greedy = greedySolve(reversed, intTarget, maxAcceptable, minAcceptable, scale);
-    if (greedy) {
+    if (greedy && greedy.variety >= varietyConstraint.min && greedy.variety <= varietyConstraint.max) {
         const sig = greedy.items.map(it => `${it.name}x${it.qty}`).sort().join('|');
         if (!existingSigs.has(sig)) {
             results.push(greedy);
@@ -1236,10 +1254,10 @@ function findAlternativeSolutions(sorted, intTarget, intTolerance, needed, exist
     }
 
     // Strategy: Random shuffle attempts
-    for (let attempt = 0; attempt < 20 && results.length < needed; attempt++) {
+    for (let attempt = 0; attempt < 30 && results.length < needed; attempt++) {
         const shuffled = [...sorted].sort(() => Math.random() - 0.5);
         const greedy2 = greedySolve(shuffled, intTarget, maxAcceptable, minAcceptable, scale);
-        if (greedy2) {
+        if (greedy2 && greedy2.variety >= varietyConstraint.min && greedy2.variety <= varietyConstraint.max) {
             const sig = greedy2.items.map(it => `${it.name}x${it.qty}`).sort().join('|');
             if (!existingSigs.has(sig)) {
                 results.push(greedy2);
@@ -1276,7 +1294,8 @@ function greedySolve(sorted, intTarget, maxAcceptable, minAcceptable, scale) {
             total: total / scale,
             target: intTarget / scale,
             diff: (total - intTarget) / scale,
-            diffPercent: ((total - intTarget) / intTarget * 100)
+            diffPercent: ((total - intTarget) / intTarget * 100),
+            variety: selections.length
         };
     }
     return null;
