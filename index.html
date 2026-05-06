@@ -714,7 +714,7 @@
         <h1>🧪 试剂耗材凑数工具 <span>输入总金额，智能匹配产品组合</span></h1>
         <div class="header-actions">
             <button class="btn btn-white btn-sm" onclick="shareProducts()">🔗 分享清单</button>
-            <button class="btn btn-white btn-sm" onclick="loadDemo()">📦 加载示例</button>
+            <button class="btn btn-white btn-sm" onclick="loadDemo()">🔄 恢复内置清单</button>
             <button class="btn btn-white btn-sm" onclick="clearAll()">🗑️ 清空全部</button>
         </div>
     </div>
@@ -1489,33 +1489,52 @@ function clearAll() {
     document.getElementById('targetAmount').value = '';
 }
 
+// ========== Built-in Default Product List ==========
+const DEFAULT_PRODUCTS = [
+    { name: '植酸', price: 130, stock: 10 },
+    { name: '柠檬酸', price: 50, stock: 10 },
+    { name: '氯化钠', price: 40, stock: 10 },
+    { name: '壳聚糖', price: 600, stock: 10 },
+    { name: '氧化镁', price: 100, stock: 10 },
+    { name: '抗坏血酸', price: 300, stock: 10 },
+    { name: '纳米二氧化硅', price: 160, stock: 10 },
+    { name: '盐酸多巴胺', price: 500, stock: 10 },
+    { name: '二氧化硅', price: 200, stock: 10 },
+    { name: '甘油', price: 100, stock: 10 },
+    { name: '乙二醇', price: 50, stock: 10 },
+    { name: '氧化铜', price: 140, stock: 10 },
+    { name: '玻璃烧杯', price: 20, stock: 10 },
+    { name: '无水硫酸钠', price: 150, stock: 10 },
+    { name: '二氧化锰', price: 350, stock: 10 },
+    { name: '氯化钾', price: 80, stock: 10 },
+    { name: '碘化钾', price: 130, stock: 10 },
+    { name: '加厚丁腈手套', price: 399, stock: 10 },
+    { name: '加厚乳胶手套', price: 349, stock: 10 },
+    { name: '封口膜4IN*125FT', price: 1590, stock: 10 },
+    { name: '四层活性炭口罩', price: 510, stock: 10 },
+    { name: '插口圆底离心管', price: 600, stock: 10 },
+    { name: '微孔滤膜', price: 136, stock: 10 },
+    { name: '100nm-Fe3O4磁性纳米微球', price: 1600, stock: 10 },
+    { name: '5nm-胶体金颗粒分散液', price: 250, stock: 10 },
+    { name: '单层氧化石墨烯水相分散液', price: 1000, stock: 10 },
+    { name: '椰壳碳2#（30-60目）', price: 200, stock: 10 },
+    { name: '50nm锐钛型-纳米二氧化钛', price: 540, stock: 10 },
+    { name: '100nm-单分散聚苯乙烯微球', price: 699, stock: 10 },
+    { name: '100nm-二氧化硅微球', price: 700, stock: 10 },
+    { name: '1×PBS缓冲液(pH7.2-7.4)', price: 64, stock: 10 },
+    { name: '普通型透析袋', price: 332, stock: 10 },
+    { name: '透析袋MD44(3500D)', price: 368, stock: 10 },
+    { name: '石英比色皿 10mm 12.4×12.4×45mm', price: 240, stock: 10 },
+    { name: '1-[(2-氟苯基)甲基]哌嗪', price: 1800, stock: 10 },
+    { name: '4,4\'-二氨基二苯乙烯二盐酸盐', price: 600, stock: 10 },
+    { name: 'MXene-单层Ti3C2,水分散液', price: 1000, stock: 10 },
+];
+
 function loadDemo() {
-    products = [
-        { name: '无水乙醇(AR 500mL)', price: 28.50, stock: 50 },
-        { name: '盐酸(AR 500mL)', price: 15.80, stock: 30 },
-        { name: '氢氧化钠(AR 500g)', price: 22.00, stock: 20 },
-        { name: '实验手套(丁腈/箱)', price: 45.00, stock: 100 },
-        { name: '移液器吸头(200μL/盒)', price: 38.50, stock: 80 },
-        { name: '离心管(15mL/包)', price: 12.60, stock: 200 },
-        { name: 'PBS缓冲液(1L)', price: 56.00, stock: 30 },
-        { name: '胰蛋白酶(100mL)', price: 128.00, stock: 10 },
-        { name: '细胞培养皿(60mm/包)', price: 35.00, stock: 50 },
-        { name: '比色皿(石英/个)', price: 18.00, stock: 40 },
-        { name: '滤膜(0.22μm/盒)', price: 65.00, stock: 25 },
-        { name: '封口膜(卷)', price: 8.50, stock: 100 },
-        { name: '称量纸(张)', price: 0.30, stock: 500 },
-        { name: 'pH标准缓冲液(套)', price: 42.00, stock: 20 },
-        { name: '载玻片(盒/50片)', price: 25.00, stock: 60 },
-        { name: '酒精棉球(罐)', price: 6.80, stock: 80 },
-        { name: '一次性注射器(5mL/支)', price: 0.85, stock: 500 },
-        { name: '琼脂粉(100g)', price: 48.00, stock: 15 },
-        { name: 'DTT(1g)', price: 195.00, stock: 8 },
-        { name: 'SDS-PAGE凝胶预制板(块)', price: 32.00, stock: 40 },
-    ];
+    products = DEFAULT_PRODUCTS.map(p => ({ ...p }));
     renderProducts();
-    document.getElementById('targetAmount').value = '2000';
     saveProducts();
-    showToast('已加载20种示例产品，目标金额设为¥2000', 'info');
+    showToast(`已加载 ${products.length} 种内置产品`, 'info');
 }
 
 // ========== Keyboard Shortcuts ==========
@@ -1534,13 +1553,19 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Init: check URL first (shared link), then localStorage
+// Init: URL share > localStorage > built-in default list
 const loadedFromUrl = loadFromUrl();
 if (!loadedFromUrl) {
     const restored = loadProducts();
-    renderProducts();
     if (restored && products.length > 0) {
+        renderProducts();
         showToast(`已恢复上次保存的 ${products.length} 个产品`, 'info');
+    } else {
+        // First visit: auto load built-in list
+        products = DEFAULT_PRODUCTS.map(p => ({ ...p }));
+        saveProducts();
+        renderProducts();
+        showToast(`已加载 ${products.length} 种内置产品清单`, 'info');
     }
 } else {
     renderProducts();
